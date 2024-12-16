@@ -4,13 +4,13 @@ import sys
 from typing import TypedDict, Sequence, List
 
 from langchain_aws import ChatBedrock
-from langgraph.graph import StateGraph, START, END
 from langchain_core.messages import BaseMessage, HumanMessage, AIMessage, trim_messages
 from langchain.prompts import ChatPromptTemplate
+from langgraph.graph import StateGraph, START, END
+from langgraph.checkpoint.memory import MemorySaver
 from rich.console import Console
 from rich.panel import Panel
 from rich.text import Text
-from langgraph.checkpoint.memory import MemorySaver
 from prompt_toolkit import PromptSession
 from prompt_toolkit.key_binding import KeyBindings, KeyPressEvent
 
@@ -19,10 +19,10 @@ from models import get_model_id, BEDROCK_PRICING, US_TO_JPY_RATE
 
 class LLMConfig:
     MODEL_ID: str
-    MODEL_NAME: str = "claude-v3.5-sonnet-v2"
+    MODEL_NAME: str = "amazon-nova-pro"
     MAX_TOKENS: int = 5120
     SYSTEM_PROMPT: str = "You are a helpful assistant. Answer all questions to the best of your ability."
-    REGION: str = "us-west-2"
+    REGION: str = "us-east-1"
 
 LLMConfig.MODEL_ID = get_model_id(LLMConfig.MODEL_NAME)
 
@@ -81,7 +81,7 @@ class ChatBot:
     def _trim_conversation_history(self, messages: List[BaseMessage]) -> List[BaseMessage]:
         return trim_messages(
             messages,
-            max_tokens=4096,
+            max_tokens=1024,
             strategy="last",
             token_counter=self.llm.get_num_tokens_from_messages,
             include_system=True,
@@ -200,7 +200,8 @@ class ChatInterface:
         )
 
     def run(self):
-        self.console.print("Chat started. Enter your message (press Ctrl+D to send, Ctrl+C to save and exit):")
+        self.console.print("Chat started. Enter your message (press ESC+ENTER to send, Ctrl+C to save and exit):")
+        self.console.print(f"Model: {LLMConfig.MODEL_NAME}")
 
         while True:
             user_input = self.prompt()

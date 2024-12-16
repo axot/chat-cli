@@ -8,3 +8,5 @@ langchain-community
 langchain-core
 langchain_aws
 langgraph
+transformers
+torch
